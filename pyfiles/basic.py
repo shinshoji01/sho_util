@@ -89,15 +89,18 @@ def save_gif(data_list, gif_path, title, save_dir="contempolary_images/", fig_si
 def plot_spectrogram(M, fig=None, subplot=(1,1,1), t=None, freq=None, title="", xlabel="", ylabel="", alpha=1, title_font=15):
     if fig==None:
         fig = plt.figure(figsize=(5,5))
+    elif type(fig)==tuple:
+        fig = plt.figure(figsize=fig)
     ax = fig.add_subplot(subplot[0], subplot[1], subplot[2])
-    if t==None:
+    if type(t)!=np.ndarray:
         t = range(M.shape[1])
-    if freq==None:
+    if type(freq)!=np.ndarray:
         freq = range(M.shape[0])
     ax.pcolormesh(t, freq, M, cmap = 'jet', alpha=alpha)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title, fontsize=title_font)
+    return ax
 
 ############ ----------------------------------------------------- #############
 ############ https://www.kaggle.com/grfiv4/plot-a-confusion-matrix #############
