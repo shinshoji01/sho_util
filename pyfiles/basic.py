@@ -8,6 +8,7 @@ import itertools
 import pickle
 import shutil
 import os
+import pandas as pd
 import glob
 
 def pickle_save(data, path):
@@ -101,6 +102,21 @@ def plot_spectrogram(M, fig=None, subplot=(1,1,1), t=None, freq=None, title="", 
     ax.set_ylabel(ylabel)
     ax.set_title(title, fontsize=title_font)
     return ax
+
+def list_substruction(a, b):
+    return [item for item in a if item not in b]
+
+def dir2table(df_dir, column):
+    for i, key in enumerate(list(df_dir.keys())):
+        df_value = df_dir[key].reset_index(drop=True)
+        df_basic = pd.DataFrame(np.array([key]*len(df_value)).reshape(-1, 1), columns=[column])
+        df = pd.concat([df_basic, df_value], axis=1)
+        if i==0:
+            df_new = df
+        else:
+            df_new = pd.concat([df_new, df], axis=0)
+    df_new = df_new.reset_index(drop=True)
+    return df_new
 
 ############ ----------------------------------------------------- #############
 ############ https://www.kaggle.com/grfiv4/plot-a-confusion-matrix #############
