@@ -36,7 +36,7 @@ class silent_sections_removal():
         args["savee"] = {}
         for dataset in args.keys():
             args[dataset]["trim_window"] = 2048
-            args[dataset]["trim_stride"] = 2048
+            args[dataset]["trim_stride"] = 512
         args["ravdess-speech"]["top_db"] = 25
         args["ravdess-song"]["top_db"] = 25
         args["tess"]["top_db"] = 25
