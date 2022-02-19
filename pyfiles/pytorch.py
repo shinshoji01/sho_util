@@ -10,6 +10,29 @@ import shutil
 import os
 import glob
 
+def do_test(net, testloader, device="cuda", mode="eval"):
+    if mode=="train":
+        net.train()
+    elif mode=="eval":
+        net.eval()
+    else:
+        return None
+    labels = np.array([])
+    with torch.no_grad():
+        for itr, data in enumerate(testloader):
+            images = data[0].to(device)
+            output = cuda2numpy(net(images))
+            label = cuda2numpy(data[1])
+            if len(label.shape)<2:
+                label = label.reshape(-1, 1)
+            if itr==0:
+                outputs = output
+                labels = label
+            else:
+                outputs = np.concatenate([outputs, output], axis=0)
+                labels = np.concatenate([labels, label], axis=0)
+    return labels, outputs
+
 class ToPIL(object):
     """
     convert torch.Tensor into PIL image
