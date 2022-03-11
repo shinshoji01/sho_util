@@ -290,13 +290,40 @@ def min_max_normalize_torch(x, target_min, target_max, axis=None):
     result = (x-min_)/(max_-min_+1e-8)
     result = result*(target_max-target_min) + target_min
     return result
+
 def mel_normalize_torch(data, data_type="LJSpeech", axis=None):
     if data_type=="LJSpeech":
         min, max = -11.422722816467285, 0.6957301956581059
     return min_max_normalize_torch(data, min, max, axis=axis)
 
 class mel2audio():
-    def __init__(self, waveglow_path="./waveglow_model.pth", pretrained=True, device="cuda"):
+    """
+    To generate audio from mel-spectrogram
+
+    ------------
+    Parameters
+    ------------
+
+    waveglow_path : str
+        path of waveglow's parameter
+    
+    device : str
+        either "cuda" or "cpu"
+        
+    ------------
+    Attributes
+    ------------
+    
+    audio_generation : To generate audio from mel-spectrogram
+    
+    ------------
+    Notes
+    ------------
+    
+    If it can not find waveglow_path, it automatically download the parameter from torchhub and save it in waveglow.
+        
+    """
+    def __init__(self, waveglow_path="./waveglow_model.pth", device="cuda"):
         n_mel_channels = 80
         n_flows = 12
         n_group = 8
@@ -320,14 +347,40 @@ class mel2audio():
         waveglow = WaveGlow(n_mel_channels, n_flows, n_group, n_early_every, n_early_size, WN_config)
         waveglow = waveglow.remove_weightnorm(waveglow)
         waveglow = waveglow.to(device)
-        if pretrained:
-            model = torch.load(waveglow_path)
-            waveglow.load_state_dict(model)
+        model = torch.load(waveglow_path)
+        waveglow.load_state_dict(model)
         self.waveglow = waveglow
         
-    def audio_generation(self, mel, noise=None):
+    def audio_generation(self, mel):
+        """
+        To generate audio from mel-spectrogram
+
+        ------------
+        Parameters
+        ------------
+
+        mel : ndarray, shape=(n_mel_channels, time-length)
+            mel-spectrogram
+            
+        ------------
+        Returns
+        ------------
+
+        audio_numpy : ndarray, shape=(length)
+            audio
+            
+        ------------
+        Examples
+        ------------
+            
+        ma = mel2audio() # it takes time if you run it first time.
+        audio_numpy = ma.audio_generation(mel)
+
+        ------------
+
+        """
         mel = mel_normalize_torch(mel, axis=[1,2])
         with torch.no_grad():
-            audio, _ = self.waveglow.infer(mel, sigma=1.0, audio_noise=noise)
+            audio, _ = self.waveglow.infer(mel, sigma=1.0, audio_noise=None)
         audio_numpy = cuda2numpy(audio[0])
         return audio_numpy

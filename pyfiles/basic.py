@@ -87,9 +87,42 @@ def save_gif(data_list, gif_path, title, save_dir="contempolary_images/", fig_si
     images[0].save(gif_path, save_all=True, append_images=images[1:], duration=duration, loop=0)
     shutil.rmtree(save_dir, ignore_errors=True)
     
-def plot_spectrogram(M, fig=None, subplot=(1,1,1), t=None, freq=None, title="", xlabel="", ylabel="", alpha=1, title_font=15):
-    if fig==None:
-        fig = plt.figure(figsize=(5,5))
+def plot_spectrogram(M, fig=(8,8), subplot=(1,1,1), t=None, freq=None, title="", xlabel="", ylabel="", alpha=1, title_font=15):
+    """
+    To plot spectrogram or mel-spectrogram with a simple command.
+
+    ------------
+    Parameters
+    ------------
+
+    M : ndarray, shape=(frequency-length, time-length)
+        spectrogram or mel-spectrogram
+
+    fig : tuple or matplotlib.figure.Figure, default=(8, 8)
+        When it is tuple, the function creates new plt.figure and it indicates the size of fig.
+    
+    ------------
+    Returns
+    ------------
+
+    ax : matplotlib.axes._subplots.AxesSubplot
+        It can be used when you want to add some features to the plot. For example, ax.set_xtick_labels
+
+    ------------
+    Examples
+    ------------
+
+    Example 1:
+    plot_spectrogram(M)
+
+    Example 2:
+    ax = plot_spectrogram(M, fig, (2, 1, 1), title_font=20)
+    
+    ------------
+
+    """
+    if fig==tuple:
+        fig = plt.figure(figsize=fig)
     elif type(fig)==tuple:
         fig = plt.figure(figsize=fig)
     ax = fig.add_subplot(subplot[0], subplot[1], subplot[2])

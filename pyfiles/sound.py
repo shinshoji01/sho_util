@@ -4,6 +4,20 @@ import librosa
 import noisereduce as nr
 
 def play_audio(data, rate):
+    """
+    To play audio
+
+    ------------
+    Parameters
+    ------------
+
+    data : ndarray, shape=(length) or (1, length)
+        audio
+
+    rate : int
+        sampling_rate
+
+    """
     IPython.display.display(IPython.display.Audio(data=data,rate=rate))
     
 def silence_removal(x, top_db=25, trim_window=256, trim_stride=128, only_edge=True, top_db_intermediate=50, mode="trim"):
@@ -24,6 +38,26 @@ def silence_removal(x, top_db=25, trim_window=256, trim_stride=128, only_edge=Tr
     return x_rec
     
 class silent_sections_removal():
+    """
+    To remove the silent sections of audio
+
+    ------------
+    Parameters
+    ------------
+
+    fs : int
+        sampling rate
+    
+    mode : str
+        choices: "split", "trim"
+        
+    ------------
+    Attributes
+    ------------
+    
+    get : To remove the silent sections of audio
+        
+    """
     def __init__(self, fs=22050, mode="trim"):
         self.mode = mode
         self.fs = fs
@@ -45,6 +79,41 @@ class silent_sections_removal():
         self.args = args
     
     def get(self, x, dataset="ravdess-speech", noise_removal=False):
+        """
+        To remove the silent sections of audio
+
+        ------------
+        Parameters
+        ------------
+
+        x : ndarray, shape=(length)
+            audio with whole length
+            
+        dataset : str
+            choices: "ravdess-speech", "ravdess-song", "tess", "crema-d", or "savee"
+            the name of dataset that audio x belongs to
+            
+        noise_removal : bool, default=False
+            whether you want to remove noise or not
+            
+        ------------
+        Returns
+        ------------
+
+        x_rec : ndarray, shape=(length)
+            audio without silent sections
+            
+        ------------
+        Examples
+        ------------
+            
+        ssr = silent_sections_removal()
+        x, fs = librosa.load(path, fs)
+        x_rec = ssr.get(x, "ravdess-speech")
+
+        ------------
+
+        """
         top_db = self.args[dataset]["top_db"]
         trim_window = self.args[dataset]["trim_window"]
         trim_stride = self.args[dataset]["trim_stride"]

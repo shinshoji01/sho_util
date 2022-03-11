@@ -193,6 +193,37 @@ class TextMelLoader(torch.utils.data.Dataset):
         return melspec
     
 class audio2mel():
+    """
+    To generate mel-spectrogram from audio
+
+    ------------
+    Parameters
+    ------------
+
+    args : dir or None
+        it indicates the parameters of melspectrogram generation and when None is inserted, args becomes the default parameters for Tacotron2. The default parameters are listed below.
+        samples:
+        args = {}
+        args["max_wav_value"] = 2**15
+        args["filter_length"] = 1024
+        args["hop_length"] = 256
+        args["win_length"] = 1024
+        args["n_mel_channels"] = 80
+        args["sampling_rate"] = 22050
+        args["mel_fmin"] = 0
+        args["mel_fmax"] = 8000
+        
+    
+    sampling_rate : int or None
+        sampling rate
+        
+    ------------
+    Attributes
+    ------------
+    
+    mel_generation : To generate mel-spectrogram from audio
+        
+    """
     def __init__(self, args=None, sampling_rate=None):
         if args is None:
             args = {}
@@ -208,6 +239,37 @@ class audio2mel():
         self.sampling_rate = sampling_rate
     
     def mel_generation(self, x, sampling_rate=None):
+        """
+        To generate melspectrogram from audio
+
+        ------------
+        Parameters
+        ------------
+
+        x : ndarray, shape=(length)
+            audio
+            
+        sampling_rate : int or None
+            sampling_rate
+            
+        ------------
+        Returns
+        ------------
+
+        mel : ndarray, shape=(args["n_mel_channels"], time-length)
+            mel-spectrogram
+            
+        ------------
+        Examples
+        ------------
+            
+        am = audio2mel()
+        x, sampling_rate = librosa.load(path, sampling_rate)
+        mel = am.mel_generation(x, sampling_rate)
+
+        ------------
+
+        """
         if sampling_rate is None:
             sampling_rate = self.sampling_rate
         data_loader = TextMelLoader(self.args)
