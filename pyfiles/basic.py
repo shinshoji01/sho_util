@@ -8,6 +8,7 @@ import itertools
 import pickle
 import shutil
 import os
+import pandas as pd
 import glob
 
 def pickle_save(data, path):
@@ -89,15 +90,33 @@ def save_gif(data_list, gif_path, title, save_dir="contempolary_images/", fig_si
 def plot_spectrogram(M, fig=None, subplot=(1,1,1), t=None, freq=None, title="", xlabel="", ylabel="", alpha=1, title_font=15):
     if fig==None:
         fig = plt.figure(figsize=(5,5))
+    elif type(fig)==tuple:
+        fig = plt.figure(figsize=fig)
     ax = fig.add_subplot(subplot[0], subplot[1], subplot[2])
-    if t==None:
+    if type(t)!=np.ndarray:
         t = range(M.shape[1])
-    if freq==None:
+    if type(freq)!=np.ndarray:
         freq = range(M.shape[0])
     ax.pcolormesh(t, freq, M, cmap = 'jet', alpha=alpha)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title, fontsize=title_font)
+    return ax
+
+def list_substruction(a, b):
+    return [item for item in a if item not in b]
+
+def dir2table(df_dir, column):
+    for i, key in enumerate(list(df_dir.keys())):
+        df_value = df_dir[key].reset_index(drop=True)
+        df_basic = pd.DataFrame(np.array([key]*len(df_value)).reshape(-1, 1), columns=[column])
+        df = pd.concat([df_basic, df_value], axis=1)
+        if i==0:
+            df_new = df
+        else:
+            df_new = pd.concat([df_new, df], axis=0)
+    df_new = df_new.reset_index(drop=True)
+    return df_new
 
 ############ ----------------------------------------------------- #############
 ############ https://www.kaggle.com/grfiv4/plot-a-confusion-matrix #############
