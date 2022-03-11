@@ -1,8 +1,10 @@
 from torch.autograd import Variable
 import torch
 import torch.nn.functional as F
+import os
+import shutil
 
-from util import *
+from pytorch import cuda2numpy
 
 def fused_add_tanh_sigmoid_multiply(input_a, input_b, n_channels):
     n_channels_int = n_channels[0]
@@ -271,29 +273,61 @@ class WaveGlow(torch.nn.Module):
             WN.res_skip_layers = remove(WN.res_skip_layers)
         return waveglow
     
-n_mel_channels = 80
-n_flows = 12
-n_group = 8
-n_early_every = 4
-n_early_size = 2
-WN_config = {}
-WN_config["n_layers"] = 8
-WN_config["n_channels"] = 512
-WN_config["kernel_size"] = 3
-device = "cuda" if torch.cuda.is_available() else "cpu"
+def min_max_normalize_torch(x, target_min, target_max, axis=None):
+    if type(axis)==list:
+        min_ = x
+        for dim in axis[::-1]:
+            min_ = torch.min(min_, dim=dim, keepdim=True).values
+        max_ = x
+        for dim in axis[::-1]:
+            max_ = torch.max(max_, dim=dim, keepdim=True).values
+    elif type(axis)==int:
+        min_ = torch.min(x, dim=axis, keepdim=True).values
+        max_ = torch.max(x, dim=axis, keepdim=True).values
+    else:
+        min_ = torch.min(x)
+        max_ = torch.max(x)
+    result = (x-min_)/(max_-min_+1e-8)
+    result = result*(target_max-target_min) + target_min
+    return result
+def mel_normalize_torch(data, data_type="LJSpeech", axis=None):
+    if data_type=="LJSpeech":
+        min, max = -11.422722816467285, 0.6957301956581059
+    return min_max_normalize_torch(data, min, max, axis=axis)
 
-def call_waveglow(model_path, pretrain=True, device="cuda"):
-    waveglow = WaveGlow(n_mel_channels, n_flows, n_group, n_early_every, n_early_size, WN_config)
-    waveglow = waveglow.remove_weightnorm(waveglow)
-    waveglow = waveglow.to(device)
-    if pretrain:
-        model = torch.load(model_path)
-        waveglow.load_state_dict(model)
-    return waveglow
-
-def audio_generation(mel, waveglow, noise=None):
-    mel = mel_normalize_torch(mel, axis=[1,2])
-    with torch.no_grad():
-        audio, audio_noise = waveglow.infer(mel, sigma=1.0, audio_noise=noise)
-    audio_numpy = audio[0].detach().to("cpu").numpy()
-    return audio_numpy, audio_noise
+class mel2audio():
+    def __init__(self, waveglow_path="./waveglow_model.pth", pretrained=True, device="cuda"):
+        n_mel_channels = 80
+        n_flows = 12
+        n_group = 8
+        n_early_every = 4
+        n_early_size = 2
+        WN_config = {}
+        WN_config["n_layers"] = 8
+        WN_config["n_channels"] = 512
+        WN_config["kernel_size"] = 3
+        
+        if not os.path.exists(waveglow_path):
+            try: 
+                waveglow = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_waveglow', force_reload=True, model_math='fp32')
+            except RuntimeError:
+                shutil.rmtree("~/.cache/torch/checkpoints/")
+                waveglow = torch.hub.load('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_waveglow', force_reload=True, model_math='fp32')
+            waveglow = waveglow.remove_weightnorm(waveglow)
+            waveglow = waveglow.to('cuda')
+            torch.save(waveglow.state_dict(), waveglow_path)
+        
+        waveglow = WaveGlow(n_mel_channels, n_flows, n_group, n_early_every, n_early_size, WN_config)
+        waveglow = waveglow.remove_weightnorm(waveglow)
+        waveglow = waveglow.to(device)
+        if pretrained:
+            model = torch.load(waveglow_path)
+            waveglow.load_state_dict(model)
+        self.waveglow = waveglow
+        
+    def audio_generation(self, mel, noise=None):
+        mel = mel_normalize_torch(mel, axis=[1,2])
+        with torch.no_grad():
+            audio, _ = self.waveglow.infer(mel, sigma=1.0, audio_noise=noise)
+        audio_numpy = cuda2numpy(audio[0])
+        return audio_numpy

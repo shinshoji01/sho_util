@@ -192,7 +192,24 @@ class TextMelLoader(torch.utils.data.Dataset):
 
         return melspec
     
-def audio2mel(filename, args, audio=None, sampling_rate=None):
-    data_loader = TextMelLoader(args)
-    mel = data_loader.get_mel(filename, audio, sampling_rate)
-    return mel
+class audio2mel():
+    def __init__(self, args=None, sampling_rate=None):
+        if args is None:
+            args = {}
+            args["max_wav_value"] = 2**15
+            args["filter_length"] = 1024
+            args["hop_length"] = 256
+            args["win_length"] = 1024
+            args["n_mel_channels"] = 80
+            args["sampling_rate"] = 22050
+            args["mel_fmin"] = 0
+            args["mel_fmax"] = 8000
+        self.args = args
+        self.sampling_rate = sampling_rate
+    
+    def mel_generation(self, x, sampling_rate=None):
+        if sampling_rate is None:
+            sampling_rate = self.sampling_rate
+        data_loader = TextMelLoader(self.args)
+        mel = data_loader.get_mel(None, x, sampling_rate)
+        return mel
