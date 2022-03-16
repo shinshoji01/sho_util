@@ -140,9 +140,14 @@ def list_substruction(a, b):
     return [item for item in a if item not in b]
 
 def dir2table(df_dir, column):
+    if type(column)==tuple:
+        column = pd.MultiIndex.from_tuples([column])
+    elif type(column)==str:
+        column = [column]
+        
     for i, key in enumerate(list(df_dir.keys())):
         df_value = df_dir[key].reset_index(drop=True)
-        df_basic = pd.DataFrame(np.array([key]*len(df_value)).reshape(-1, 1), columns=[column])
+        df_basic = pd.DataFrame(np.array([key]*len(df_value)).reshape(-1, 1), columns=column)
         df = pd.concat([df_basic, df_value], axis=1)
         if i==0:
             df_new = df
