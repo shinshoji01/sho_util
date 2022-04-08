@@ -156,6 +156,30 @@ def dir2table(df_dir, column):
     df_new = df_new.reset_index(drop=True)
     return df_new
 
+def either_inclusion(list, reference_list):
+    bool_list = []
+    for l in list:
+        bool_list.append(l in reference_list)
+    return np.array(bool_list)
+
+def get_bool_base_on_conditions(df, params, multiple_column=False):
+    bool_str = ""
+    for hue in params.keys():
+        if multiple_column:
+            bool_str += f'(either_inclusion(df[{hue}], params[{hue}]))*'
+        else:
+            bool_str += f'(either_inclusion(df["{hue}"], params["{hue}"]))*'
+    return eval(bool_str[:-1])
+
+def get_bool_base_on_conditions_with_exclusion(data, inclusion, exclusion, multiple_column=False):
+    inclusion_bool = get_bool_base_on_conditions(data, inclusion, multiple_column)
+    
+    whole_params = {**inclusion, **exclusion}
+    exclusion_bool = get_bool_base_on_conditions(data, whole_params, multiple_column)
+    
+    bool_list_int = np.array(inclusion_bool, dtype=np.int) - np.array(exclusion_bool, dtype=np.int)
+    return np.array(bool_list_int, dtype=bool)
+
 ############ ----------------------------------------------------- #############
 ############ https://www.kaggle.com/grfiv4/plot-a-confusion-matrix #############
 def plot_confusion_matrix(cm,
