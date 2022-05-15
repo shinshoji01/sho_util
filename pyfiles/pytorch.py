@@ -10,6 +10,8 @@ import shutil
 import os
 import glob
 
+from basic import min_max
+
 def do_test(net, testloader, device="cuda", mode="eval"):
     if mode=="train":
         net.train()

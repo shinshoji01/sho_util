@@ -180,6 +180,58 @@ def get_bool_base_on_conditions_with_exclusion(data, inclusion, exclusion, multi
     bool_list_int = np.array(inclusion_bool, dtype=np.int) - np.array(exclusion_bool, dtype=np.int)
     return np.array(bool_list_int, dtype=bool)
 
+def key_inclusion(list, key):
+    bool_list = []
+    for l in list:
+        bool_list.append(key in l)
+    return np.array(bool_list)
+
+def key_exclusion(list, key):
+    bool_list = []
+    for l in list:
+        bool_list.append(not(key in l))
+    return np.array(bool_list)
+
+def select_from_pathlist(path_list, included="all", excluded="None", selection_mode_included="or", selection_mode_excluded="or"):
+    path_list = np.array(path_list)
+    if included=="all":
+        new_path_list = path_list
+    else:
+        if type(included) != list:
+            included = [included]
+        for i, key in enumerate(included):
+            bl = np.array(key_inclusion(path_list, key),dtype=int)
+            if i==0:
+                bool_list = bl
+            else:
+                if selection_mode_included=="or":
+                    bool_list = bool_list + bl
+                elif selection_mode_included=="and":
+                    bool_list = bool_list * bl
+                else:
+                    print(selection_mode_included)
+        new_path_list = path_list[np.array(bool_list,dtype=bool)]
+    path_list = new_path_list
+    
+    if excluded=="None":
+        new_path_list = path_list
+    else:
+        if type(excluded) != list:
+            excluded = [excluded]
+        for i, key in enumerate(excluded):
+            bl = np.array(key_exclusion(path_list, key),dtype=int)
+            if i==0:
+                bool_list = bl
+            else:
+                if selection_mode_excluded=="or":
+                    bool_list = bool_list + bl
+                elif selection_mode_excluded=="and":
+                    bool_list = bool_list * bl
+                else:
+                    print(selection_mode_excluded)
+        new_path_list = path_list[np.array(bool_list,dtype=bool)]
+    return new_path_list
+
 ############ ----------------------------------------------------- #############
 ############ https://www.kaggle.com/grfiv4/plot-a-confusion-matrix #############
 def plot_confusion_matrix(cm,
