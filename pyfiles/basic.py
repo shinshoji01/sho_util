@@ -180,19 +180,69 @@ def get_bool_base_on_conditions_with_exclusion(data, inclusion, exclusion, multi
     bool_list_int = np.array(inclusion_bool, dtype=np.int) - np.array(exclusion_bool, dtype=np.int)
     return np.array(bool_list_int, dtype=bool)
 
-def key_inclusion(list, key):
+def select_columns(data, included=None, excluded=None):
+    """
+
+    ------------
+    Parameters
+    ------------
+
+    ------------
+    Returns
+    ------------
+
+    ------------
+    Examples
+    ------------
+
+    Example 1:
+    included = [
+        '["basics", ["model name", "emotion", "mode"]]',
+        '["fi", :]'
+    ]
+
+    ------------
+
+    """
+    # Get all the columns
+    if included==None:
+        whole_df = data.copy()
+    else:
+        dfs = []
+        for i in range(len(included)):
+            cols = eval(f'pd.IndexSlice{included[i]}')
+            dfs += [data.loc[:, cols]]
+        whole_df = pd.concat(dfs, axis=1)
+        whole_df = whole_df.loc[:,~whole_df.columns.duplicated()]
+
+    # Get the columns we want to exclude
+    if excluded==None:
+        output = whole_df.copy()
+    else:
+        excluded_columns = []
+        for i in range(len(excluded)):
+            cols = eval(f'pd.IndexSlice{excluded[i]}')
+            excluded_columns += list(data.loc[:, cols].columns)
+        output = whole_df.drop(excluded_columns, axis=1)
+    return output
+
+def key_inclusion(list, key, basename=False):
     bool_list = []
     for l in list:
+        if basename:
+            l = os.path.basename(l)
         bool_list.append(key in l)
     return np.array(bool_list)
 
-def key_exclusion(list, key):
+def key_exclusion(list, key, basename=False):
     bool_list = []
     for l in list:
+        if basename:
+            l = os.path.basename(l)
         bool_list.append(not(key in l))
     return np.array(bool_list)
 
-def select_from_pathlist(path_list, included="all", excluded="None", selection_mode_included="or", selection_mode_excluded="or"):
+def select_from_pathlist(path_list, included="all", excluded="None", selection_mode_included="or", selection_mode_excluded="or", basename_included=False, basename_excluded=False):
     path_list = np.array(path_list)
     if included=="all":
         new_path_list = path_list
@@ -200,7 +250,7 @@ def select_from_pathlist(path_list, included="all", excluded="None", selection_m
         if type(included) != list:
             included = [included]
         for i, key in enumerate(included):
-            bl = np.array(key_inclusion(path_list, key),dtype=int)
+            bl = np.array(key_inclusion(path_list, key, basename_included),dtype=int)
             if i==0:
                 bool_list = bl
             else:
@@ -219,7 +269,7 @@ def select_from_pathlist(path_list, included="all", excluded="None", selection_m
         if type(excluded) != list:
             excluded = [excluded]
         for i, key in enumerate(excluded):
-            bl = np.array(key_exclusion(path_list, key),dtype=int)
+            bl = np.array(key_exclusion(path_list, key, basename_excluded),dtype=int)
             if i==0:
                 bool_list = bl
             else:
