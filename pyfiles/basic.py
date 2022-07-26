@@ -163,13 +163,17 @@ def either_inclusion(list, reference_list):
     return np.array(bool_list)
 
 def get_bool_base_on_conditions(df, params, multiple_column=False):
-    bool_str = ""
-    for hue in params.keys():
-        if multiple_column:
-            bool_str += f'(either_inclusion(df[{hue}], params[{hue}]))*'
-        else:
-            bool_str += f'(either_inclusion(df["{hue}"], params["{hue}"]))*'
-    return eval(bool_str[:-1])
+    if len(params)>0:
+        bool_str = ""
+        for hue in params.keys():
+            if multiple_column:
+                bool_str += f'(either_inclusion(df[{hue}], params[{hue}]))*'
+            else:
+                bool_str += f'(either_inclusion(df["{hue}"], params["{hue}"]))*'
+        bool_list = eval(bool_str[:-1])
+    else: 
+        bool_list = np.array([True]*len(df))
+    return bool_list
 
 def get_bool_base_on_conditions_with_exclusion(data, inclusion, exclusion, multiple_column=False):
     inclusion_bool = get_bool_base_on_conditions(data, inclusion, multiple_column)
@@ -226,21 +230,33 @@ def select_columns(data, included=None, excluded=None):
         output = whole_df.drop(excluded_columns, axis=1)
     return output
 
-def key_inclusion(list, key, basename=False):
+def key_inclusion(list, key, basename=False, mode="bool"):
     bool_list = []
     for l in list:
         if basename:
             l = os.path.basename(l)
         bool_list.append(key in l)
-    return np.array(bool_list)
+        
+    bool_list = np.array(bool_list)
+    if mode=="bool":
+        output = bool_list
+    elif mode=="list":
+        output = np.array(list)[bool_list]
+    return output
 
-def key_exclusion(list, key, basename=False):
+def key_exclusion(list, key, basename=False, mode="bool"):
     bool_list = []
     for l in list:
         if basename:
             l = os.path.basename(l)
         bool_list.append(not(key in l))
-    return np.array(bool_list)
+
+    bool_list = np.array(bool_list)
+    if mode=="bool":
+        output = bool_list
+    elif mode=="list":
+        output = np.array(list)[bool_list]
+    return output
 
 def select_from_pathlist(path_list, included="all", excluded="None", selection_mode_included="or", selection_mode_excluded="or", basename_included=False, basename_excluded=False):
     path_list = np.array(path_list)
