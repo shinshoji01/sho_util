@@ -1,6 +1,6 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+# import torch
+# import torch.nn as nn
+# import torch.nn.functional as F
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -156,11 +156,16 @@ def dir2table(df_dir, column):
     df_new = df_new.reset_index(drop=True)
     return df_new
 
-def either_inclusion(list, reference_list):
-    bool_list = []
-    for l in list:
-        bool_list.append(l in reference_list)
-    return np.array(bool_list)
+# def either_inclusion(lst, reference_list):
+#     reference_set = set(reference_list)
+#     bool_list = [item in reference_set for item in lst]
+#     return np.array(bool_list)
+def either_inclusion(lst, reference_list):
+    if type(reference_list)==str:
+        reference_list = [reference_list]
+    reference_set = set(reference_list)
+    bool_arr = np.fromiter((item in reference_set for item in lst), dtype=bool)
+    return np.array(bool_arr)
 
 def get_bool_base_on_conditions(df, params, multiple_column=False):
     if len(params)>0:
