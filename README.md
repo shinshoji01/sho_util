@@ -4,3 +4,7 @@ This repository contains the python functions for my own usage. Since it is pain
 ```bash
 git submodule add -b main git@github.com:shinshoji01/sho_util.git
 ```
+# When you clone the repository that includes a submodule
+```bash
+git submodule update --init --recursive
+```
