@@ -1,70 +1,8 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 from PIL import Image
-import matplotlib.pyplot as plt
-import itertools
-import pickle
-import shutil
-import os
-import glob
 
 from basic import min_max
-
-def do_test(net, testloader, device="cuda", mode="eval"):
-    if mode=="train":
-        net.train()
-    elif mode=="eval":
-        net.eval()
-    else:
-        return None
-    labels = np.array([])
-    with torch.no_grad():
-        for itr, data in enumerate(testloader):
-            images = data[0].to(device)
-            output = cuda2numpy(net(images))
-            label = cuda2numpy(data[1])
-            if len(label.shape)<2:
-                label = label.reshape(-1, 1)
-            if itr==0:
-                outputs = output
-                labels = label
-            else:
-                outputs = np.concatenate([outputs, output], axis=0)
-                labels = np.concatenate([labels, label], axis=0)
-    return labels, outputs
-
-def do_test_VAE(net, testloader, device="cuda", mode="eval"):
-    if mode=="train":
-        net.train()
-    elif mode=="eval":
-        net.eval()
-    else:
-        return None
-    losses = 0
-    with torch.no_grad():
-        for itr, data in enumerate(testloader):
-            images = data[0].to(device)
-            output, latent, loss = net(images, True)
-            input = cuda2numpy(images)
-            output = cuda2numpy(output)
-            latent = cuda2numpy(latent)
-            losses += cuda2numpy(loss)*output.shape[0]
-            label = cuda2numpy(data[1])
-            if len(label.shape)<2:
-                label = label.reshape(-1, 1)
-            if itr==0:
-                inputs = input
-                latents = latent
-                outputs = output
-                labels = label
-            else:
-                inputs = np.concatenate([inputs, input], axis=0)
-                latents = np.concatenate([latents, latent], axis=0)
-                outputs = np.concatenate([outputs, output], axis=0)
-                labels = np.concatenate([labels, label], axis=0)
-    return labels, inputs, outputs, losses/inputs.shape[0], latents
 
 class ToPIL(object):
     """
