@@ -2,11 +2,10 @@ import numpy as np
 import re
 
 import sys
-from dialog import concatenate_close_voice
 
 from openai import OpenAI
-api_key = "sk-ANuLBmSVZUkf8I308b17C775Ce464c7dA06dF119E9A29fE3"
-api_base = "https://api.ai-gaochao.cn/v1"
+api_key = ""
+api_base = ""
 client = OpenAI(api_key=api_key, base_url=api_base)
 
 def gpt_api_no_stream(prompt: str, 
