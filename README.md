@@ -8,3 +8,6 @@ git submodule add -b main git@github.com:shinshoji01/sho_util.git
 ```bash
 git submodule update --init --recursive
 ```
+
+# Contact
+Feel free to contact me if you have any questions (shoinoue@link.cuhk.edu.cn).
