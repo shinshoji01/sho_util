@@ -303,6 +303,15 @@ def select_from_pathlist(path_list, included="all", excluded="None", selection_m
         new_path_list = path_list[np.array(bool_list,dtype=bool)]
     return new_path_list
 
+def get_outliers(values):
+    q1, q3 = np.quantile(values, [0.25,0.75])
+    iqr = q3-q1
+    return (q1-1.5*iqr<=values)*(q3+1.5*iqr>=values)
+
+def compute_mean_nooutliers(values):
+    bool_list = get_outliers(values)
+    mean = values[bool_list].mean()
+    return mean
 
 ### Latex Text Generation from Pandas DataFrame ###
 
