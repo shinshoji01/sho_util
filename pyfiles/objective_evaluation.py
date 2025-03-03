@@ -18,12 +18,14 @@ class get_evaluation_scores():
     ------------
     Examples
     ------------
-
-    Example 1:
-    included = [
-        '["basics", ["model name", "emotion", "mode"]]',
-        '["fi", :]'
-    ]
+    
+    ges = get_evaluation_scores(sr=16000)
+    data = ges.get(reference_audio_path, target_audio_path, p_logscale=False, e_logscale=False)
+    
+    "Melcepstral Distortion (MCD)" ---> data["mcd"]["score"]
+    "Pitch Distortion" ---> data["pitch"]["score"]
+    "Energy Distortion" ---> data["energy"]["score"]
+    "Frame Disturbance (FD)" ---> data["mcd"]["fd"]
 
     ------------
 
