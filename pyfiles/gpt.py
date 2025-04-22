@@ -4,22 +4,24 @@ import re
 import sys
 
 from openai import OpenAI
-api_key = ""
-api_base = ""
-client = OpenAI(api_key=api_key, base_url=api_base)
+# api_key = ""
+# api_base = ""
+# client = OpenAI(api_key=api_key, base_url=api_base)
 
-def gpt_api_no_stream(prompt: str, 
-                      model="gpt-4o",
-                      reset_messages: bool = True,
-                      response_only: bool = True
-                      ):
+def gpt_api_no_stream(
+    client,
+    prompt: str, 
+    model="gpt-4o",
+    reset_messages: bool = True,
+    response_only: bool = True
+):
     """
     ------------
     Examples
     ------------
     
     try:
-        response = gpt_api_no_stream(prompt, model=model)[1]
+        response = gpt_api_no_stream(client, prompt, model=model)[1]
     except AuthenticationError:
         continue
     if "OpenAI API error" in response:
